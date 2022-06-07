@@ -15,7 +15,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_super_user(self, username, first_name, last_name, phone_number, password, **kwargs):
+    def create_superuser(self, username, first_name, last_name, phone_number, password, **kwargs):
         user = self.create_user(
             username,
             first_name,
@@ -30,7 +30,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     """ Custom User Model """
-    username = models.CharField(max_length=50, verbose_name='Никнейм пользователя')
+    username = models.CharField(max_length=50, unique=True, verbose_name='Никнейм пользователя')
     first_name = models.CharField(max_length=50, null=False, verbose_name='Имя пользователя')
     last_name = models.CharField(max_length=50, null=False, verbose_name='Фамилия пользователя')
     phone_number = models.CharField(max_length=12, unique=True, verbose_name='Номер телефона')
@@ -61,7 +61,6 @@ class Cafe(models.Model):
     name = models.CharField(max_length=50, null=False, verbose_name='Название заведения')
     photo = models.ImageField(null=False, default='default_cafe_photo.png')
     address = models.CharField(max_length=200, null=False, verbose_name='Адрес заведения')
-    is_full = models.BooleanField(null=False, default=False)
 
     def __str__(self):
         return f"{self.name}: {self.address}"
@@ -91,7 +90,6 @@ class CafeCuisine(models.Model):
 
 
 class Place(models.Model):
-    # ??? Why do we need this place model?
     cafe = models.ForeignKey(Cafe, on_delete=models.CASCADE, verbose_name='Заведение')
     min_guest_number = models.SmallIntegerField(verbose_name='Минимальное количество посетителей')
     max_guest_number = models.SmallIntegerField(verbose_name='Максимальное количество посетителей')

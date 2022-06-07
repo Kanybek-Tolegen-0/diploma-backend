@@ -8,6 +8,7 @@ djangorestframework = "==3.13.1"
 django-filter = "*"
 Django = "==4.0.4"
 Markdown = "*"
+pillow = "*"
 
 [dev-packages]
 

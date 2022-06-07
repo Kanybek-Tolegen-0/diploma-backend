@@ -3,3 +3,6 @@
 
 # Open Files
 ~$*
+
+# Python Redundant Files
+__pycache__
