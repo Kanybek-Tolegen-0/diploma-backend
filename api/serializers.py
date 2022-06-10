@@ -1,5 +1,6 @@
 from django.db.models import F
 from django.db.models import Q
+from django.contrib.auth import hashers
 
 from rest_framework import serializers
 
@@ -12,6 +13,22 @@ class UserModelSerializer(serializers.ModelSerializer):
         model = models.User
         fields = '__all__'
 
+    def update(self, instance, validated_data):
+        if 'id' in validated_data:
+            raise Exception("Cannot update id of user")
+        super().update(instance, validated_data)
+        if 'password' in validated_data:
+            password = validated_data.get('password', None)
+            instance.set_password(password)
+        instance.save()
+        return instance
+
+    def delete(self, instance):
+        count, data = instance.delete()
+        if count > 0:
+            return True
+        return False
+
 
 class CafePhoneNumberModelSerializer(serializers.ModelSerializer):
 
@@ -20,11 +37,25 @@ class CafePhoneNumberModelSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class CuisineModelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Cuisine
+        fields = '__all__'
+
+
 class CafeCuisineModelSerializer(serializers.ModelSerializer):
+
+    cuisine = CuisineModelSerializer()
 
     class Meta:
         model = models.CafeCuisine
-        fields = '__all__'
+        fields = [
+            'id',
+            'cafe',
+            'cuisine_id',
+            'cuisine'
+        ]
 
 
 class CafeModelSerializer(serializers.ModelSerializer):
@@ -34,19 +65,16 @@ class CafeModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Cafe
         fields = [
+            'id',
             'name',
             'photo',
+            'description',
+            'workday_start_time',
+            'workday_end_time',
             'address',
             'phones',
             'cuisines'
         ]
-
-
-class CuisineModelSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = models.Cuisine
-        fields = '__all__'
 
 
 class PlaceModelSerializer(serializers.ModelSerializer):

@@ -9,6 +9,7 @@ django-filter = "*"
 Django = "==4.0.4"
 Markdown = "*"
 pillow = "*"
+djangorestframework-simplejwt = "*"
 
 [dev-packages]
 

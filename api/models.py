@@ -1,3 +1,5 @@
+from datetime import time
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
@@ -61,6 +63,9 @@ class Cafe(models.Model):
     name = models.CharField(max_length=50, null=False, verbose_name='Название заведения')
     photo = models.ImageField(null=False, default='default_cafe_photo.png')
     address = models.CharField(max_length=200, null=False, verbose_name='Адрес заведения')
+    description = models.CharField(max_length=300, null=True, verbose_name='Описание заведения', default=None)
+    workday_start_time = models.TimeField(default=time(hour=9, minute=0, second=0))
+    workday_end_time = models.TimeField(default=time(hour=18, minute=0, second=0))
 
     def __str__(self):
         return f"{self.name}: {self.address}"

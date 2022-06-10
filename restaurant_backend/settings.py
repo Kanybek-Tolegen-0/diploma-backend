@@ -44,7 +44,8 @@ INSTALLED_APPS = [
 
     'api.apps.ApiConfig',
 
-    'rest_framework'
+    'rest_framework',
+    'rest_framework_simplejwt'
 ]
 
 MIDDLEWARE = [
@@ -77,6 +78,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'restaurant_backend.wsgi.application'
 
+# REST FRAMEWORK
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        #'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+AUTH_HEADER_TYPES = (
+    'Bearer',
+    'JWT',
+    'Token'
+)
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
