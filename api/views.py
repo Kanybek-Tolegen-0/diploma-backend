@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from rest_framework import viewsets
 from rest_framework import generics
@@ -12,7 +12,11 @@ from rest_framework.response import Response
 from . import serializers
 from . import models
 from . import paginators
-
+from .validators import (
+    validate_reserve_datetime,
+    validate_passed_datetime,
+    validated_by_cafe_working_hours
+)
 
 class UserViewSet(generics.RetrieveAPIView,
                   generics.UpdateAPIView,
@@ -101,19 +105,69 @@ class UserReservesView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return models.Reserve.objects.filter(user=user).select_related('place')
+        return models.Reserve.objects.filter(user=user, reserve_start_time__date__gte=date.today()).select_related('place')
 
     def create(self, request, *args, **kwargs):
+        user = request.user
+        data = request.data
+        data['user'] = user.id
         serializer = self.get_serializer(data=request.data)
-        print(serializer.initial_data)
-        if serializer.is_valid():
-            try:
-                instance = serializer.save()
-            except AssertionError:
-                instance = None
-        else:
-            instance = None
+        try:
+            serializer.is_valid(raise_exception=True)
 
-        if instance:
-            return Response(data=serializer.data)
-        return Response(data={"error":"already_reserved"}, status=status.HTTP_404_NOT_FOUND)
+            validate_passed_datetime(serializer.validated_data.get('reserve_start_time'))
+            validated_by_cafe_working_hours(
+                serializer.validated_data.get('reserve_start_time'),
+                serializer.validated_data.get('reserve_duration'),
+                serializer.validated_data.get('place').cafe.workday_start_time,
+                serializer.validated_data.get('place').cafe.workday_end_time,
+            )
+            for reserve in models.Reserve.objects.filter(place__id=data.get('place')):
+                valid = validate_reserve_datetime(
+                    serializer.validated_data.get('reserve_start_time'),
+                    serializer.validated_data.get('reserve_duration'),
+                    reserve.reserve_start_time,
+                    reserve.reserve_duration
+                )
+            serializer.save()
+            return Response(data={"status": "1"})
+        except Exception as e:
+            print("EXCEPTION", e)
+
+        return Response(data={"status":"0"}, status=status.HTTP_404_NOT_FOUND)
+
+class ExactReserveView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = models.Reserve.objects.select_related('place').all()
+    serializer_class = serializers.ReserveModelSerializer
+
+    permission_classes = [permissions.AllowAny,]
+    lookup_field = 'id'
+
+    def patch(self, request, *args, **kwargs):
+        data = request.data
+        data['user'] = request.user.id
+        data['id'] = kwargs.get('id', None)
+        serializer = self.get_serializer(data=data)
+        reserve_instance = models.Reserve.objects.get(id=kwargs.get('id', None))
+        try:
+            serializer.is_valid(raise_exception=True)
+
+            validate_passed_datetime(serializer.validated_data.get('reserve_start_time'))
+            validated_by_cafe_working_hours(
+                serializer.validated_data.get('reserve_start_time'),
+                serializer.validated_data.get('reserve_duration'),
+                serializer.validated_data.get('place').cafe.workday_start_time,
+                serializer.validated_data.get('place').cafe.workday_end_time,
+            )
+            for reserve in models.Reserve.objects.filter(place__id=data.get('place')):
+                valid = validate_reserve_datetime(
+                    serializer.validated_data.get('reserve_start_time'),
+                    serializer.validated_data.get('reserve_duration'),
+                    reserve.reserve_start_time,
+                    reserve.reserve_duration
+                )
+            serializer.update(reserve_instance, serializer.validated_data)
+            return Response(data={"status": "1"})
+        except Exception as e:
+            print("Exception", e)
+        return Response(data={"status": "0"})
