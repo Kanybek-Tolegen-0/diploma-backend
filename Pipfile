@@ -10,6 +10,7 @@ Django = "==4.0.4"
 Markdown = "*"
 pillow = "*"
 djangorestframework-simplejwt = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 
