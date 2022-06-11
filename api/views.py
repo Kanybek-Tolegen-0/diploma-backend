@@ -144,11 +144,15 @@ class ExactReserveView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'id'
 
     def patch(self, request, *args, **kwargs):
+        reserve_instance = models.Reserve.objects.get(id=kwargs.get('id', None))
+
         data = request.data
         data['user'] = request.user.id
         data['id'] = kwargs.get('id', None)
+        data['place'] = reserve_instance.place.id
+        
         serializer = self.get_serializer(data=data)
-        reserve_instance = models.Reserve.objects.get(id=kwargs.get('id', None))
+
         try:
             serializer.is_valid(raise_exception=True)
 
