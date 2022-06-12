@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 from django.db.models import AutoField
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -95,6 +96,11 @@ AUTH_HEADER_TYPES = (
     'JWT',
     'Token'
 )
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
