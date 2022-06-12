@@ -155,7 +155,8 @@ AUTH_USER_MODEL = 'api.User'
 # DEFAULT_AUTO_FIELD = AutoField
 
 # CORS Settings
+CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3000'
 ]
